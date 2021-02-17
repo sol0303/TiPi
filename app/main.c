@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -10,7 +11,7 @@
 #include "Fonts/fonts.h"
 #include "GUI/GUI_Paint.h"
 #include "e-Paper/EPD_2in13.h"
-#include "MQTTLinux.h"
+#include "app_mqtt.h"
 int get_ip(const char* interface, char* ip)
 {
 	int i=0;
@@ -139,19 +140,20 @@ int update_time()
 	return sec_this;
 }
 
+static void cfinish(int sig)
+{
+	signal(SIGINT, NULL);
+	mqtt_listen_stop = 1;
+}
+
 
 int main()
 {
-	Network n;
-	NetworkInit(&n);
-	init_screen();
-	update_ip();
-	while(1)
-	{
-		if (update_time() == 59)//update ip every minute
-			update_ip();
+	signal(SIGINT, cfinish);
+	signal(SIGTERM, cfinish);
 
-	}
-	
+	int rv = mqtt_sub_start();
+	printf("subscribe stop:%d\n", rv);
 	return 0;
 }
+
