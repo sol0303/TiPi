@@ -2,21 +2,22 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include "Fonts/fonts.h"
-#include "GUI/GUI_Paint.h"
-#include "e-Paper/EPD_2in13.h"
+
 #include "app_mqtt.h"
+#include "app_disp_ctrl.h"
 
 
-#define GET_LOCK()              do {pthread_mutex_lock(&disp_dev.lock); }while(0)
-#define RELEASE_LOCK()          do {pthread_mutex_unlock(&disp_dev.lock); }while(0)
-
-struct disp_ctrl
-{
-    pthread_mutex_t lock;
-    UBYTE* image;
-};
 struct disp_ctrl disp_dev;
+
+void select_my_image()
+{
+	Paint_SelectImage(disp_dev.image);
+}
+
+void disp_my_image()
+{
+	EPD_2IN13_Display(disp_dev.image);
+}
 
 int init_disp()
 {
@@ -83,6 +84,10 @@ int disp(const char * str)
 	EPD_2IN13_Display(disp_dev.image);
 
 	RELEASE_LOCK();
-	return;
+	return 0;
 	
 }
+
+
+
+
