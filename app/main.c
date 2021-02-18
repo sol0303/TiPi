@@ -8,10 +8,10 @@
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <time.h>
-#include "Fonts/fonts.h"
-#include "GUI/GUI_Paint.h"
-#include "e-Paper/EPD_2in13.h"
 #include "app_mqtt.h"
+#include "app_disp_ctrl.h"
+
+#if 0
 int get_ip(const char* interface, char* ip)
 {
 	int i=0;
@@ -45,35 +45,6 @@ int get_ip(const char* interface, char* ip)
 	return -1;
 }
 
-UBYTE* BlackImage = NULL;
-int init_screen()
-{
-	if (DEV_Module_Init() != 0)
-	{
-		printf("init dev fail\n");
-		return -1;
-	}
-	EPD_2IN13_Init(EPD_2IN13_FULL);
-	EPD_2IN13_Clear();
-	EPD_2IN13_Init(EPD_2IN13_PART);
- 	EPD_2IN13_Clear();
-	usleep(500000);
-	UWORD Imagesize = ((EPD_2IN13_WIDTH % 8 == 0)?(EPD_2IN13_WIDTH / 8) : (EPD_2IN13_WIDTH / 8 + 1)) * EPD_2IN13_HEIGHT;
-	BlackImage = (UBYTE*)malloc(Imagesize);
-	if (BlackImage  == NULL)
-	{
-		printf("malloc fail\n");
-		return -1;
-	}
-	Paint_NewImage(BlackImage, EPD_2IN13_WIDTH, EPD_2IN13_HEIGHT, 270, WHITE);
-	Paint_SelectImage(BlackImage);
-	Paint_Clear(WHITE);
-	Paint_DrawString_EN(15, 15, "eth0:", &Font16, BLACK, WHITE);
-	Paint_DrawString_EN(15, 35, "wlan0:", &Font16, BLACK, WHITE);
-	EPD_2IN13_Display(BlackImage);
-	usleep(2000000);
-	return 0;
-}
 
 
 int disp_ip(const char* eth0, const char* wlan0)
@@ -139,6 +110,7 @@ int update_time()
 	}
 	return sec_this;
 }
+#endif 
 
 static void cfinish(int sig)
 {
@@ -151,9 +123,9 @@ int main()
 {
 	signal(SIGINT, cfinish);
 	signal(SIGTERM, cfinish);
-
-	int rv = mqtt_sub_start();
-	printf("subscribe stop:%d\n", rv);
+	init_disp();
+	disp("1.绝不意气用事。\n2.绝不错判漏判。\n3.绝对裁判的公正漂亮。\n裁判机器人蜻蜓队长，前来晋见!!");
+	// mqtt_sub_start();
 	return 0;
 }
 

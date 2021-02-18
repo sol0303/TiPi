@@ -79,6 +79,17 @@ typedef struct
   
 }cFONT;
 
+typedef struct
+{    
+  sFONT* sfont;
+  const  char *table;
+  uint16_t size;
+  uint16_t ASCII_Width;
+  uint16_t Width;
+  uint16_t Height;
+}cFONT_extra;
+
+
 extern sFONT Font24;
 extern sFONT Font20;
 extern sFONT Font16;
@@ -87,6 +98,7 @@ extern sFONT Font8;
 
 extern cFONT Font12CN;
 extern cFONT Font24CN;
+extern cFONT_extra Font1212CN;
 #ifdef __cplusplus
 }
 #endif

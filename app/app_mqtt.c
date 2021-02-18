@@ -11,22 +11,26 @@
 
 int mqtt_listen_stop = 0;
 
-//杈撳嚭this鐩綍鍚庣殑绗竴绾х洰褰曪紝濡傝緭鍏his = /tipi ; topic_in = /tipi/config/ 杈撳嚭/config
-static int topic_parse(const char* this, const char* topic_in, char* topic_out) 
+//输出this目录后的第一级目录的位置和长度，如输入this = /tipi ; topic_in = /tipi/config/
+//输出 topic_in+5  7
+static int topic_parse(const char* this, const char* topic_in, char** sub_topic, int* len) 
 {
-	char* p = topic_in;
-	if (*p != '/')
-		return -1;
-	do 
-	{
-		for (int i = 0; i < strlen(this))
-	}while(*p != '\0');
-	int len = strlen(topic_in);
-	char* ch = strstr(topic_in, root);
+	int tmp = 0;
+	char* ch = strstr(topic_in, this);
 	if (ch == NULL)
 		return -1;
-	ch = ch + strlen(this)
-	if (ch - topic_in >)
+	ch = ch + strlen(this);
+	if (*ch != '/' || (*(ch+1) == '\0'))
+		return -1;	
+	*sub_topic = ch;
+	do
+	{
+		ch++;
+		tmp++;
+	}
+	while(*ch != '\0' && *ch != '/');
+	*len = tmp;
+	return 0;
 }
 
 void recv_callback(MessageData* md)
@@ -35,6 +39,26 @@ void recv_callback(MessageData* md)
 
 	printf("%.*s\t", md->topicName->lenstring.len, md->topicName->lenstring.data);
 	printf("%.*s\n", (int)message->payloadlen, (char*)message->payload);
+
+
+	char topic[256];
+	if (md->topicName->lenstring.len > 255)
+		return;
+	strncpy(topic, md->topicName->lenstring.data, md->topicName->lenstring.len);
+	topic[md->topicName->lenstring.len] = '\0';
+
+	char this[64];
+	strcpy(this, ROOT_TOPIC);
+	char* sub;
+	char* p_in = topic;
+	int len;
+	while(topic_parse(this, p_in, &sub, &len) == 0)
+	{
+		printf("sub topic:%s\n", sub);
+		strncpy(this, sub, len);
+		this[len] = '\0';
+		p_in = sub;
+	}	
 	//fflush(stdout);
 }
 
@@ -118,8 +142,8 @@ int mqtt_sub_start()
 	p.host_addr = HOST_ADDR;
 	p.port = HOST_PORT;
 	p.qos = 1;
-	p.topic = ROOT_TOPIC"/#";					//鐢ㄤ竴涓猚lient澶勭悊鎵�鏈塼opic锛屽璧峰嚑涓嚎绋嬪垎鍒鐞嗕笉鍚宼opic浜﹀彲
+	p.topic = ROOT_TOPIC"/#";					//用一个client处理所有topic，多起几个线程分别处理不同topic亦可
 	pthread_create(&tid, NULL, mqtt_subscribe, &p);
-	pthread_join(tid, NULL);
+	// pthread_join(tid, NULL);
 	return 0;
 }
