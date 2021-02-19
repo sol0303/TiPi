@@ -54,6 +54,7 @@ int disp(const char * str)
 	char tmp[64];
 	char* pt = tmp;
 	GET_LOCK();
+	Paint_Clear(WHITE);
 	while(*p != '\0')
 	{
 		if (y >= 7)
@@ -82,7 +83,6 @@ int disp(const char * str)
 	*pt = '\0';
 	Paint_DrawString_CN_extra(1,1+16*y, tmp, &Font1212CN, BLACK, WHITE, &y);
 	EPD_2IN13_Display(disp_dev.image);
-
 	RELEASE_LOCK();
 	return 0;
 	

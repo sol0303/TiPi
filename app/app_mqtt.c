@@ -3,9 +3,11 @@
 #include <stdio.h>
 #include <signal.h>
 #include "MQTTClient.h"
-
+#include "application.h"
 
 #define ROOT_TOPIC	"/tipi"
+#define TOPIC_ADD_TIP	"/tip"
+#define TOPIC_ADD_NOTE	"/note"
 #define HOST_ADDR	 ((char*)"localhost")
 #define HOST_PORT	1883
 
@@ -40,23 +42,39 @@ void recv_callback(MessageData* md)
 	printf("%.*s\t", md->topicName->lenstring.len, md->topicName->lenstring.data);
 	printf("%.*s\n", (int)message->payloadlen, (char*)message->payload);
 
+	char payload[1024];
+	strncpy(payload, message->payload, message->payloadlen);
+	payload[message->payloadlen] = '\0';
 
-	char topic[256];
+
+	char topic_name[256];
 	if (md->topicName->lenstring.len > 255)
 		return;
-	strncpy(topic, md->topicName->lenstring.data, md->topicName->lenstring.len);
-	topic[md->topicName->lenstring.len] = '\0';
+	strncpy(topic_name, md->topicName->lenstring.data, md->topicName->lenstring.len);
+	topic_name[md->topicName->lenstring.len] = '\0';
 
 	char this[64];
 	strcpy(this, ROOT_TOPIC);
 	char* sub;
-	char* p_in = topic;
+	char* p_in = topic_name;
 	int len;
 	while(topic_parse(this, p_in, &sub, &len) == 0)
 	{
+
 		printf("sub topic:%s\n", sub);
 		strncpy(this, sub, len);
 		this[len] = '\0';
+		if (strcmp(this, TOPIC_ADD_TIP) == 0)
+		{
+			add_tip(payload);
+		}
+		else if (strcmp(this, TOPIC_ADD_NOTE) == 0)
+		{
+			add_note(payload);
+		}
+
+
+
 		p_in = sub;
 	}	
 	//fflush(stdout);
