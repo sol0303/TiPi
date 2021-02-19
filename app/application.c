@@ -80,6 +80,7 @@ int is_mosquitto_alive()
     if( (fgets(buf,64,fp))!= NULL ) 
     {
         count = atoi(buf); 
+		pclose(fp); 
         if((count - 1) == 0) 
             return -1;
         else
